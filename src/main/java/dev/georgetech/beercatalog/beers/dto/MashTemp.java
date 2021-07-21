@@ -1,5 +1,8 @@
 package dev.georgetech.beercatalog.beers.dto;
 
+import lombok.ToString;
+
+@ToString
 public class MashTemp {
     private BoilVolume temp;
     private long duration;

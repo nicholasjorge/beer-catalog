@@ -1,5 +1,8 @@
 package dev.georgetech.beercatalog.beers.dto;
 
+import lombok.ToString;
+
+@ToString
 public class BoilVolume {
     private double value;
     private String unit;
