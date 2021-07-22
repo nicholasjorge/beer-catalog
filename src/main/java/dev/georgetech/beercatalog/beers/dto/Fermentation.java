@@ -1,16 +1,9 @@
 package dev.georgetech.beercatalog.beers.dto;
 
-import lombok.ToString;
+import lombok.Data;
 
-@ToString
+@Data
 public class Fermentation {
     private BoilVolume temp;
 
-    public BoilVolume getTemp() {
-        return temp;
-    }
-
-    public void setTemp(BoilVolume value) {
-        this.temp = value;
-    }
 }

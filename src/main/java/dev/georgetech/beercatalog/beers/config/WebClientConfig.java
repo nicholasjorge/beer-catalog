@@ -1,4 +1,4 @@
-package dev.georgetech.beercatalog.config;
+package dev.georgetech.beercatalog.beers.config;
 
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;

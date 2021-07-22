@@ -1,4 +1,4 @@
-package dev.georgetech.beercatalog.config;
+package dev.georgetech.beercatalog.beers.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.function.client.WebClientCustomizer;
@@ -11,7 +11,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class ResponseLoggingCustomizer implements WebClientCustomizer {
+public class WebClientLoggingCustomizer implements WebClientCustomizer {
 
     @Override
     public void customize(WebClient.Builder webClientBuilder) {

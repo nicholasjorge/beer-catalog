@@ -1,25 +1,10 @@
 package dev.georgetech.beercatalog.beers.dto;
 
-import lombok.ToString;
+import lombok.Data;
 
-@ToString
+@Data
 public class BoilVolume {
     private double value;
     private String unit;
 
-    public double getValue() {
-        return value;
-    }
-
-    public void setValue(double value) {
-        this.value = value;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String value) {
-        this.unit = value;
-    }
 }
