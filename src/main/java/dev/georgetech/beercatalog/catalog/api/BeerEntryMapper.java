@@ -10,7 +10,6 @@ public class BeerEntryMapper {
 
     public static BeerEntryDto toDto(BeerEntry model) {
         return BeerEntryDto.builder()
-                .id(String.valueOf(model.getId()))
                 .beerId(model.getBeerInfo().getBeerId())
                 .beerName(model.getBeerInfo().getBeerName())
                 .location(model.getLocation())

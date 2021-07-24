@@ -23,7 +23,12 @@ public class BeerEntryService {
         return saved.getId();
     }
 
-    public BeerEntry getBeerEntry(Long id) {
+    public BeerEntry getBeerEntryByName(String name) {
+        return beerEntryRepository.findBeerEntryByName(name)
+                .orElse(BeerEntry.EMPTY);
+    }
+
+    public BeerEntry getBeerEntryById(Long id) {
         return beerEntryRepository.findById(id)
                 .orElse(BeerEntry.EMPTY);
     }

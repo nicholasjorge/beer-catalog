@@ -14,8 +14,6 @@ import java.time.LocalDate;
 @Builder
 public class BeerEntryDto {
 
-    String id;
-
     @NotBlank
     String beerId;
     @NotBlank

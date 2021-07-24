@@ -12,7 +12,9 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "BEER_CATALOG")
+@Table(name = "BEER_CATALOG",
+        indexes = @Index(name = "beer_name_index", columnList = "beer_name")
+)
 public class BeerEntry {
 
     public static final BeerEntry EMPTY = new BeerEntry();

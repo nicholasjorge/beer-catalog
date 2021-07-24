@@ -2,6 +2,7 @@ package dev.georgetech.beercatalog.beers.api;
 
 import dev.georgetech.beercatalog.beers.adapter.BeersApiAdapter;
 import dev.georgetech.beercatalog.beers.dto.Beer;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,9 +15,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "Beers Controller API", description = "Provides data about beer")
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/beers")
 @RestController
 public class BeersController {
 

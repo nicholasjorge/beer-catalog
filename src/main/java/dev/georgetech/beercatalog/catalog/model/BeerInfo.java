@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Getter
@@ -15,5 +16,6 @@ import javax.persistence.Embeddable;
 public class BeerInfo {
 
     private String beerId;
+    @Column(name = "beer_name", unique = true)
     private String beerName;
 }
