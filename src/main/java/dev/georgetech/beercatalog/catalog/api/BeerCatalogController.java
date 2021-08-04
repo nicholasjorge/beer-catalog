@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+@Slf4j
 @Tag(name = "Beer Catalog API", description = "REST API that provides data about beer entries for a session")
 @RequiredArgsConstructor
 @RestController
@@ -32,7 +34,7 @@ public class BeerCatalogController {
 
     @Operation(summary = "Get beer catalog")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found beer catalog",
+            @ApiResponse(responseCode = "200", description = "Beer catalog found",
                     content = {@Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = BeerCatalog.class))}),
             @ApiResponse(responseCode = "404", description = "Beer catalog not found",
@@ -40,6 +42,7 @@ public class BeerCatalogController {
     @GetMapping(produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<BeerCatalog> getBeerCatalog() {
         var beerEntries = beerEntryService.getBeerEntries();
+        log.info("beer entries:{}", beerEntries);
         Set<BeerEntryDto> entries = beerEntries.stream()
                 .map(BeerEntryMapper::toDto)
                 .collect(Collectors.toSet());
@@ -51,7 +54,7 @@ public class BeerCatalogController {
 
     @Operation(summary = "Get beer entry by id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found beer entry",
+            @ApiResponse(responseCode = "200", description = "Beer entry found",
                     content = {@Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = BeerEntryDto.class))}),
             @ApiResponse(responseCode = "404", description = "Beer entry not found",
@@ -59,6 +62,7 @@ public class BeerCatalogController {
     @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<BeerEntryDto> getBeerEntryById(@PathVariable Long id) {
         var beerEntry = beerEntryService.getBeerEntryById(id);
+        log.info("beer entry:{}", beerEntry);
         if (BeerEntry.EMPTY == beerEntry) {
             return ResponseEntity.notFound().build();
         }
@@ -67,7 +71,7 @@ public class BeerCatalogController {
 
     @Operation(summary = "Get beer entry by name")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found beer entry",
+            @ApiResponse(responseCode = "200", description = "Beer entry found",
                     content = {@Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = BeerEntryDto.class))}),
             @ApiResponse(responseCode = "404", description = "Beer entry not found",
@@ -75,6 +79,7 @@ public class BeerCatalogController {
     @GetMapping(value = "/search", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<BeerEntryDto> getBeerEntryByName(@RequestParam String name) {
         var beerEntry = beerEntryService.getBeerEntryByName(name);
+        log.info("beer entry:{}", beerEntry);
         if (BeerEntry.EMPTY == beerEntry) {
             return ResponseEntity.notFound().build();
         }

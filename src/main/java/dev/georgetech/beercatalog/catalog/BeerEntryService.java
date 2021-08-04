@@ -24,7 +24,7 @@ public class BeerEntryService {
     }
 
     public BeerEntry getBeerEntryByName(String name) {
-        return beerEntryRepository.findBeerEntryByName(name)
+        return beerEntryRepository.findByBeerInfoBeerNameContainingIgnoreCase(name)
                 .orElse(BeerEntry.EMPTY);
     }
 

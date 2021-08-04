@@ -15,13 +15,21 @@ public class BeersControllerAdvice extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     String handleILAE(IllegalArgumentException exception) {
         String exceptionMessage = exception.getMessage();
-        log.error("Unexpected exception: {}", exceptionMessage);
+        log.error("IllegalArgumentException: {}", exceptionMessage);
         return exceptionMessage;
     }
 
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     String handleILSE(IllegalStateException exception) {
+        String exceptionMessage = exception.getMessage();
+        log.error("IllegalStateException exception: {}", exceptionMessage);
+        return exceptionMessage;
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    String handleILSE(RuntimeException exception) {
         String exceptionMessage = exception.getMessage();
         log.error("Unexpected exception: {}", exceptionMessage);
         return exceptionMessage;

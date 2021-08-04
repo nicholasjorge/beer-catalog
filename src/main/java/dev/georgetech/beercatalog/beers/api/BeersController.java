@@ -2,18 +2,24 @@ package dev.georgetech.beercatalog.beers.api;
 
 import dev.georgetech.beercatalog.beers.adapter.BeersApiAdapter;
 import dev.georgetech.beercatalog.beers.dto.Beer;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Tag(name = "Beers Controller API", description = "Provides data about beer")
 @Slf4j
@@ -22,45 +28,57 @@ import java.util.Map;
 @RestController
 public class BeersController {
 
-    private static final int TIMEOUT_SECONDS = 5;
-    private final WebClient webClient;
     private final BeersApiAdapter beersApiAdapter;
 
+    @Operation(summary = "Get beers")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Beers found",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            array = @ArraySchema(schema = @Schema(implementation = Beer.class)))}),
+            @ApiResponse(responseCode = "404", description = "Beers not found",
+                    content = {@Content})})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Beer> getBeers() {
-        List<Beer> beers = webClient.get()
-                .uri("/beers")
-                .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response -> Mono.just(new IllegalArgumentException("client_error")))
-                .onStatus(HttpStatus::is5xxServerError, response -> Mono.just(new IllegalStateException("server_error")))
-                .bodyToFlux(Beer.class)
-                .collectList()
-                .block(Duration.ofSeconds(TIMEOUT_SECONDS));
+    public ResponseEntity<List<Beer>> getBeers() {
+        List<Beer> beers = beersApiAdapter.getBeers();
         log.info("Beers: {}", beers);
-        return beers;
+        if (beers.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(beers);
     }
 
+    @Operation(summary = "Get beer by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Beer found",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Beer.class))}),
+            @ApiResponse(responseCode = "404", description = "Beer not found",
+                    content = {@Content})})
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Beer[] getBeer(@PathVariable String id) {
-        Beer[] beer = webClient.get()
-                .uri("/beers/" + id)
-                .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response -> Mono.just(new IllegalArgumentException("client_error")))
-                .onStatus(HttpStatus::is5xxServerError, response -> Mono.just(new IllegalStateException("server_error")))
-                .bodyToMono(Beer[].class)
-                .block(Duration.ofSeconds(TIMEOUT_SECONDS));
-        log.info("Beer: {}", beer);
-        return beer;
+    public ResponseEntity<Beer> getBeer(@PathVariable Long id) {
+        Optional<Beer> optionalBeer = beersApiAdapter.getBeerById(id);
+        log.info("Beer: {}", optionalBeer);
+        return optionalBeer.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Get beers filtered")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Beers found",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            array = @ArraySchema(schema = @Schema(implementation = Beer.class)))}),
+            @ApiResponse(responseCode = "404", description = "Beers not found",
+                    content = {@Content})})
     @GetMapping(value = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Beer> getBeersFiltered(@RequestParam(required = false) String fermentationType,
-                                       @RequestParam(required = false) String food,
-                                       @RequestParam(required = false) Map<String, String> ibuParams) {
-        List<Beer> beers = beersApiAdapter.getBeers(fermentationType, food, ibuParams);
+    public ResponseEntity<List<Beer>> getBeersFiltered(@RequestParam(required = false) String fermentationType,
+                                                       @RequestParam(required = false) String food,
+                                                       @RequestParam(required = false) Map<String, String> ibuParams) {
+        List<Beer> beers = beersApiAdapter.getBeersFiltered(fermentationType, food, ibuParams);
         log.info("Beers: {}", beers);
-        return beers;
+        if (beers.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(beers);
     }
-
 
 }
