@@ -1,9 +1,6 @@
 package dev.georgetech.beercatalog.catalog.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -13,6 +10,7 @@ import javax.persistence.Embeddable;
 @NoArgsConstructor
 @Builder
 @Embeddable
+@ToString
 public class BeerInfo {
 
     private String beerId;

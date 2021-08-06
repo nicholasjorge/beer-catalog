@@ -19,6 +19,7 @@ public class BeerEntryService {
     }
 
     public Long saveBeerEntry(BeerEntry beerEntry) {
+        log.info("Saving beer entry :{}", beerEntry);
         BeerEntry saved = beerEntryRepository.save(beerEntry);
         return saved.getId();
     }

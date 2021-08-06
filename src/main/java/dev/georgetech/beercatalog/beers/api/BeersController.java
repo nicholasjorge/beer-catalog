@@ -70,10 +70,8 @@ public class BeersController {
             @ApiResponse(responseCode = "404", description = "Beers not found",
                     content = {@Content})})
     @GetMapping(value = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Beer>> getBeersFiltered(@RequestParam(required = false) String fermentationType,
-                                                       @RequestParam(required = false) String food,
-                                                       @RequestParam(required = false) Map<String, String> ibuParams) {
-        List<Beer> beers = beersApiAdapter.getBeersFiltered(fermentationType, food, ibuParams);
+    public ResponseEntity<List<Beer>> getBeersFiltered(@RequestParam(defaultValue = "") Map<String, String> params) {//required=false makes swagger not show the params input
+        List<Beer> beers = beersApiAdapter.getBeersFiltered(params);
         log.info("Beers: {}", beers);
         if (beers.isEmpty()) {
             return ResponseEntity.notFound().build();

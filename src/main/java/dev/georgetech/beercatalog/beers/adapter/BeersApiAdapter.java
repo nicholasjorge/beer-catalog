@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -26,52 +28,65 @@ public class BeersApiAdapter {
 
     //TODO group remote api query params to these categories/fermentation types
     static {
-        TYPE_TO_TEMP_INTERVAL.put("top", "");
-        TYPE_TO_TEMP_INTERVAL.put("medium", "");
-        TYPE_TO_TEMP_INTERVAL.put("bottom", "");
+        TYPE_TO_TEMP_INTERVAL.put("top", "15-25");
+        TYPE_TO_TEMP_INTERVAL.put("medium", "10-15");
+        TYPE_TO_TEMP_INTERVAL.put("bottom", "7-10");
     }
 
-    //TODO remove duplication
     public List<Beer> getBeers() {
-        return webClient.get()
-                .uri("/beers")
-                .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response -> Mono.just(new IllegalArgumentException("client_error")))
-                .onStatus(HttpStatus::is5xxServerError, response -> Mono.just(new IllegalStateException("server_error")))
-                .bodyToFlux(Beer.class)
-                .collectList()
-                .block(Duration.ofSeconds(TIMEOUT_SECONDS));
+        return callExternalApi("/beers");
     }
 
     public Optional<Beer> getBeerById(Long id) {
-        List<Beer> beers = webClient.get()
-                .uri("/beers/" + id)
-                .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response -> Mono.just(new IllegalArgumentException("client_error")))
-                .onStatus(HttpStatus::is5xxServerError, response -> Mono.just(new IllegalStateException("server_error")))
-                .bodyToFlux(Beer.class)
-                .collectList()
-                .block(Duration.ofSeconds(TIMEOUT_SECONDS));
+        List<Beer> beers = callExternalApi("/beers/" + id);
         if (beers == null || beers.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(beers.get(0));
     }
 
-    public List<Beer> getBeersFiltered(String fermentationType,
-                                       String food,
-                                       Map<String, String> ibuParams) {
-        //TODO validate/process params
-        //TODO forward params to remote API
+    public List<Beer> getBeersFiltered(Map<String, String> params) {
+        MultiValueMap<String, String> queryParams = resolveQueryParams(params);
         List<Beer> beers = webClient.get()
-                .uri("/beers")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/beers")
+                        .queryParams(queryParams)
+                        .build())
                 .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response -> Mono.just(new IllegalArgumentException("client_error")))
-                .onStatus(HttpStatus::is5xxServerError, response -> Mono.just(new IllegalStateException("server_error")))
+                .onStatus(HttpStatus::is4xxClientError, response -> Mono.error(new IllegalArgumentException("client_error")))
+                .onStatus(HttpStatus::is5xxServerError, response -> Mono.error(new IllegalStateException("server_error")))
                 .bodyToFlux(Beer.class)
                 .collectList()
                 .block(Duration.ofSeconds(TIMEOUT_SECONDS));
         log.info("beers:{}", beers);
+        return filterFermentationTemperature(params, beers);
+    }
+
+    private List<Beer> callExternalApi(String uri) {
+        return webClient.get()
+                .uri(uri)
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError, response -> Mono.error(new IllegalArgumentException("client_error")))
+                .onStatus(HttpStatus::is5xxServerError, response -> Mono.error(new IllegalStateException("server_error")))
+                .bodyToFlux(Beer.class)
+                .collectList()
+                .block(Duration.ofSeconds(TIMEOUT_SECONDS));
+    }
+
+    private MultiValueMap<String, String> resolveQueryParams(Map<String, String> originalQueryParams) {
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        if (originalQueryParams.isEmpty()) {
+            return queryParams;
+        }
+        Optional.ofNullable(originalQueryParams.get("food")).ifPresent(value -> queryParams.add("food", value));
+        Optional.ofNullable(originalQueryParams.get("ibuMin")).ifPresent(value -> queryParams.add("ibu_gt", value));
+        Optional.ofNullable(originalQueryParams.get("ibuMax")).ifPresent(value -> queryParams.add("ibu_lt", value));
+        return queryParams;
+    }
+
+    private List<Beer> filterFermentationTemperature(Map<String, String> params, List<Beer> beers) {
+        Optional<String> fermentationType = Optional.ofNullable(params.get("fermentationType"));
+        //TODO filter beers based on temperature for fermentation filtering
         return beers;
     }
 

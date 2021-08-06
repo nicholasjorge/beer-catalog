@@ -23,8 +23,8 @@ public class OpenAPIConfig {
                         .description("Beer search and save simple application")
                         .version("v0.0.1")
                         .contact(new Contact()
-                                .name("George Nicolae")
-                                .email("nicolae.george.9@gmail.com")));
+                                .name("George I. Nicolae PFA")
+                                .email("george.nicolae.dev@gmail.com")));
     }
 
     @Bean

@@ -25,6 +25,7 @@ public class BeerCatalogControllerAdvice extends ResponseEntityExceptionHandler 
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleRuntimeException(RuntimeException ex) {
+        log.error("Unexpected exception, {}", ex.getMessage(), ex);
         return ex.getMessage();
     }
 
