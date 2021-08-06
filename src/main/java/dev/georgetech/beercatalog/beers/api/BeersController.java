@@ -55,7 +55,7 @@ public class BeersController {
             @ApiResponse(responseCode = "404", description = "Beer not found",
                     content = {@Content})})
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Beer> getBeer(@PathVariable Long id) {
+    public ResponseEntity<Beer> getBeer(@PathVariable String id) {
         Optional<Beer> optionalBeer = beersApiAdapter.getBeerById(id);
         log.info("Beer: {}", optionalBeer);
         return optionalBeer.map(ResponseEntity::ok)

@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,24 +20,17 @@ import java.util.Optional;
 @Component
 public class BeersApiAdapter {
 
-    //TODO extract to config props instead of static init block
-    private static final Map<String, String> TYPE_TO_TEMP_INTERVAL = new HashMap<>();
+    private static final String BEERS_ENDPOINT = "/beers";
     private static final int TIMEOUT_SECONDS = 5;
+
     private final WebClient webClient;
 
-    //TODO group remote api query params to these categories/fermentation types
-    static {
-        TYPE_TO_TEMP_INTERVAL.put("top", "15-25");
-        TYPE_TO_TEMP_INTERVAL.put("medium", "10-15");
-        TYPE_TO_TEMP_INTERVAL.put("bottom", "7-10");
-    }
-
     public List<Beer> getBeers() {
-        return callExternalApi("/beers");
+        return callExternalApi(BEERS_ENDPOINT);
     }
 
-    public Optional<Beer> getBeerById(Long id) {
-        List<Beer> beers = callExternalApi("/beers/" + id);
+    public Optional<Beer> getBeerById(String id) {
+        List<Beer> beers = callExternalApi(BEERS_ENDPOINT + "/" + id);
         if (beers == null || beers.isEmpty()) {
             return Optional.empty();
         }
@@ -49,7 +41,7 @@ public class BeersApiAdapter {
         MultiValueMap<String, String> queryParams = resolveQueryParams(params);
         List<Beer> beers = webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/beers")
+                        .path(BEERS_ENDPOINT)
                         .queryParams(queryParams)
                         .build())
                 .retrieve()
@@ -59,7 +51,7 @@ public class BeersApiAdapter {
                 .collectList()
                 .block(Duration.ofSeconds(TIMEOUT_SECONDS));
         log.info("beers:{}", beers);
-        return filterFermentationTemperature(params, beers);
+        return beers;
     }
 
     private List<Beer> callExternalApi(String uri) {
@@ -78,16 +70,12 @@ public class BeersApiAdapter {
         if (originalQueryParams.isEmpty()) {
             return queryParams;
         }
-        Optional.ofNullable(originalQueryParams.get("food")).ifPresent(value -> queryParams.add("food", value));
+        Optional.ofNullable(originalQueryParams.get("food")).ifPresent(value -> queryParams.add("food", value.replace(" ", "_")));
         Optional.ofNullable(originalQueryParams.get("ibuMin")).ifPresent(value -> queryParams.add("ibu_gt", value));
         Optional.ofNullable(originalQueryParams.get("ibuMax")).ifPresent(value -> queryParams.add("ibu_lt", value));
+        Optional.ofNullable(originalQueryParams.get("page")).ifPresent(value -> queryParams.add("page", value));
+        Optional.ofNullable(originalQueryParams.get("size")).ifPresent(value -> queryParams.add("per_page", value));
         return queryParams;
-    }
-
-    private List<Beer> filterFermentationTemperature(Map<String, String> params, List<Beer> beers) {
-        Optional<String> fermentationType = Optional.ofNullable(params.get("fermentationType"));
-        //TODO filter beers based on temperature for fermentation filtering
-        return beers;
     }
 
 }
